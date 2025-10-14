@@ -8,7 +8,7 @@
 
     <div class="institution-selector">
       <label>Select Financial Institution:</label>
-      <select [(ngModel)]="selectedInstitution" (change)="selectInstitution($any($event.target).value)" class="institution-select">
+      <select [(ngModel)]="selectedInstitutionName" (change)="onInstitutionChange()" class="institution-select">
         @for (inst of institutions(); track inst.name) {
           <option [value]="inst.name">{{ inst.name }}</option>
         }
