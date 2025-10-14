@@ -122,21 +122,23 @@ export class App implements OnInit {
       return;
     }
 
+    const messageToSend = this.chatInput;
+    const currentHistory = [...this.chatMessages()];
+    
     const userMessage: ChatMessage = {
       role: 'user',
-      content: this.chatInput,
+      content: messageToSend,
       timestamp: new Date()
     };
 
-    this.chatMessages.set([...this.chatMessages(), userMessage]);
-    const messageToSend = this.chatInput;
+    this.chatMessages.set([...currentHistory, userMessage]);
     this.chatInput = '';
     this.chatLoading.set(true);
 
     this.apiService.sendChatMessage({
       institutionName: this.selectedInstitution(),
       message: messageToSend,
-      conversationHistory: this.chatMessages().slice(0, -1)
+      conversationHistory: currentHistory
     }).subscribe({
       next: (response) => {
         const assistantMessage: ChatMessage = {
@@ -144,7 +146,7 @@ export class App implements OnInit {
           content: response.message,
           timestamp: new Date()
         };
-        this.chatMessages.set([...this.chatMessages(), assistantMessage]);
+        this.chatMessages.set([...currentHistory, userMessage, assistantMessage]);
         this.chatLoading.set(false);
       },
       error: (err) => {
