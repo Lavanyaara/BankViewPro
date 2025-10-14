@@ -65,3 +65,19 @@ export interface AllMetricInfo {
   profitability: CategoryMetricInfo;
   liquidity: CategoryMetricInfo;
 }
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+export interface ChatRequest {
+  institutionName: string;
+  message: string;
+  conversationHistory: ChatMessage[];
+}
+
+export interface ChatResponse {
+  message: string;
+}
