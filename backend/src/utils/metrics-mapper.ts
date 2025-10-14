@@ -90,7 +90,8 @@ export class MetricsMapper {
   }
 
   /**
-   * Estimate metric value for historical years
+   * Estimate metric value for historical years based on current year value
+   * Returns 0 if no current value available (no synthetic fallback)
    */
   private static estimateMetric(currentValue: number | undefined, defaultValue: number, yearsBack: number): number {
     if (currentValue) {
@@ -98,7 +99,8 @@ export class MetricsMapper {
       const variance = (Math.random() - 0.5) * 0.01 * yearsBack;
       return parseFloat((currentValue * (1 + variance)).toFixed(2));
     }
-    return parseFloat((defaultValue * (1 + (Math.random() - 0.5) * 0.1)).toFixed(2));
+    // Return 0 instead of random synthetic data when actual value not available
+    return 0;
   }
 
   /**

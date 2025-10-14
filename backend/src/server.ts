@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 import { generateSampleData, getMetricInfo } from './utils/data-generator';
 import { calculateOverallScore, getRatingLabel } from './utils/scoring-engine';
 import { generateCommentary } from './utils/commentary-generator';
+import { EdgarService } from './utils/edgar-service';
+import { SECAnalysisService } from './utils/sec-analysis-service';
+import { MetricsMapper } from './utils/metrics-mapper';
+import { EdgarCache } from './utils/edgar-cache';
 
 dotenv.config();
 
@@ -15,6 +19,26 @@ app.use(express.json());
 
 const bankData = generateSampleData();
 const metricInfo = getMetricInfo();
+const analysisService = new SECAnalysisService();
+
+// Helper function to extract category-specific text from EDGAR analysis
+function extractCategoryFromAnalysis(analysisText: string, category: string): string | null {
+  const categoryMap: Record<string, string> = {
+    'overview': '1\\. Business Environment|2\\. Company\'s Market Position',
+    'capitalization': '5\\. Regulatory Compliance.*?(?:CET1|Tier 1|capital)',
+    'asset_quality': '3\\. Risk Management.*?(?:NPL|charge-off|asset quality)',
+    'profitability': '2\\. Company\'s Market Position.*?(?:ROE|ROA|profitability)',
+    'liquidity': '5\\. Regulatory Compliance.*?(?:LCR|NSFR|liquidity)'
+  };
+
+  const pattern = categoryMap[category];
+  if (!pattern) return null;
+
+  const regex = new RegExp(`(${pattern}[\\s\\S]{0,500})`, 'i');
+  const match = analysisText.match(regex);
+  
+  return match ? match[1].trim() : null;
+}
 
 app.get('/api/institutions', (req: Request, res: Response) => {
   const institutions = Object.keys(bankData).map(name => ({
@@ -28,24 +52,65 @@ app.get('/api/institutions', (req: Request, res: Response) => {
   res.json(institutions);
 });
 
-app.get('/api/institutions/:name', (req: Request, res: Response) => {
+app.get('/api/institutions/:name', async (req: Request, res: Response) => {
   const name = decodeURIComponent(req.params.name);
-  const institution = bankData[name];
   
-  if (!institution) {
+  // Check if institution exists in our list
+  if (!bankData[name]) {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
-  res.json(institution);
+  try {
+    // Try to use cached EDGAR data first
+    const cached = EdgarCache.get(name);
+    if (cached) {
+      console.log(`Using cached EDGAR data for ${name}`);
+      return res.json(cached.data);
+    }
+    
+    // Fetch and analyze SEC filings
+    console.log(`Fetching SEC filings for ${name}...`);
+    const { tenKText, tenQText, filingInfo } = await EdgarService.getFilingDocumentsForAnalysis(name);
+    
+    if (!tenKText && !tenQText) {
+      console.log(`No SEC filings found for ${name}, using synthetic data`);
+      return res.json(bankData[name]);
+    }
+    
+    // Analyze filings with AI
+    console.log(`Analyzing SEC filings for ${name}...`);
+    const analysis = await analysisService.analyzeFilings(name, tenKText, tenQText);
+    
+    // Extract metrics from analysis
+    const extractedMetrics = analysisService.extractMetrics(analysis.fullAnalysis);
+    
+    // Map to dashboard format
+    const institutionData = MetricsMapper.mapToInstitution(name, extractedMetrics, analysis.fullAnalysis);
+    
+    // Cache the result
+    EdgarCache.set(name, institutionData, analysis.fullAnalysis);
+    
+    console.log(`Successfully fetched and analyzed EDGAR data for ${name}`);
+    res.json(institutionData);
+  } catch (error) {
+    console.error(`Error fetching EDGAR data for ${name}:`, error);
+    // Fallback to synthetic data
+    console.log(`Falling back to synthetic data for ${name}`);
+    res.json(bankData[name]);
+  }
 });
 
 app.get('/api/institutions/:name/scores', (req: Request, res: Response) => {
   const name = decodeURIComponent(req.params.name);
-  const institution = bankData[name];
   
-  if (!institution) {
+  // Check if institution exists
+  if (!bankData[name]) {
     return res.status(404).json({ error: 'Institution not found' });
   }
+  
+  // Try to use cached EDGAR data first, otherwise fall back to synthetic
+  const cached = EdgarCache.get(name);
+  const institution = cached ? cached.data : bankData[name];
   
   const scores = calculateOverallScore(institution);
   const rating = getRatingLabel(scores.overall);
@@ -60,10 +125,21 @@ app.post('/api/commentary', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'institutionName and category are required' });
   }
   
-  const institution = bankData[institutionName];
-  
-  if (!institution) {
+  // Check if institution exists
+  if (!bankData[institutionName]) {
     return res.status(404).json({ error: 'Institution not found' });
+  }
+  
+  // Try to use cached EDGAR data first, otherwise fall back to synthetic
+  const cached = EdgarCache.get(institutionName);
+  const institution = cached ? cached.data : bankData[institutionName];
+  
+  // If we have EDGAR analysis text and it contains relevant category info, use it directly
+  if (cached && cached.analysisText) {
+    const categoryText = extractCategoryFromAnalysis(cached.analysisText, category);
+    if (categoryText) {
+      return res.json({ commentary: categoryText });
+    }
   }
   
   const scores = calculateOverallScore(institution);
@@ -83,11 +159,14 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'institutionName and message are required' });
   }
   
-  const institution = bankData[institutionName];
-  
-  if (!institution) {
+  // Check if institution exists
+  if (!bankData[institutionName]) {
     return res.status(404).json({ error: 'Institution not found' });
   }
+  
+  // Try to use cached EDGAR data first, otherwise fall back to synthetic
+  const cached = EdgarCache.get(institutionName);
+  const institution = cached ? cached.data : bankData[institutionName];
   
   const scores = calculateOverallScore(institution);
   const latestData = institution.historical_data[institution.historical_data.length - 1];
