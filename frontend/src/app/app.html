@@ -114,6 +114,50 @@
                 <p>{{ commentary()['overview'] }}</p>
               </div>
             }
+
+            <!-- Chatbot Interface -->
+            <div class="chat-section">
+              <h3>💬 Ask About This Institution</h3>
+              <div class="chat-container">
+                <div class="chat-messages">
+                  @if (chatMessages().length === 0) {
+                    <div class="chat-welcome">
+                      <p>👋 Welcome! I'm your financial analyst assistant.</p>
+                      <p>Ask me anything about {{ selectedInstitution() }}'s financial metrics, credit scores, or overall performance.</p>
+                    </div>
+                  }
+                  @for (msg of chatMessages(); track $index) {
+                    <div class="chat-message" [class.user-message]="msg.role === 'user'" [class.assistant-message]="msg.role === 'assistant'">
+                      <div class="message-role">{{ msg.role === 'user' ? 'You' : 'Assistant' }}</div>
+                      <div class="message-content">{{ msg.content }}</div>
+                    </div>
+                  }
+                  @if (chatLoading()) {
+                    <div class="chat-message assistant-message">
+                      <div class="message-role">Assistant</div>
+                      <div class="message-content typing">Analyzing...</div>
+                    </div>
+                  }
+                </div>
+                <div class="chat-input-container">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="chatInput" 
+                    (keyup.enter)="sendChatMessage()"
+                    placeholder="Ask a question about the institution's financials..."
+                    class="chat-input"
+                    [disabled]="chatLoading()"
+                  />
+                  <button 
+                    (click)="sendChatMessage()" 
+                    class="chat-send-btn"
+                    [disabled]="chatLoading() || !chatInput.trim()"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         }
 
