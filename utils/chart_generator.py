@@ -187,7 +187,17 @@ def create_performance_radar(current_data, benchmarks, metrics, institution_name
     for metric in metrics:
         if metric in benchmarks and metric in current_data:
             current_val = current_data[metric]
-            benchmark = benchmarks[metric]
+            benchmark_info = benchmarks[metric]
+            
+            # Extract benchmark values
+            if 'benchmark' in benchmark_info:
+                benchmark = benchmark_info['benchmark']
+            else:
+                continue
+            
+            # Skip if benchmark values are None
+            if benchmark.get('good') is None or benchmark.get('fair') is None:
+                continue
             
             if benchmark['good'] > benchmark['fair']:  # Higher is better
                 if current_val >= benchmark['good']:
