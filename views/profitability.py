@@ -1,7 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
-from utils.chart_generator import create_trend_chart, create_metric_gauge, create_correlation_heatmap
 from utils.commentary_generator import generate_metric_commentary, generate_section_commentary
 from utils.data_generator import get_metric_info
 
@@ -79,236 +78,6 @@ def render_profitability(bank_data, institution_name):
     
     st.divider()
     
-    # Profitability Trends Overview
-    st.subheader("📈 Profitability Trends Overview")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Returns chart (ROA and ROE)
-        fig_returns = go.Figure()
-        
-        fig_returns.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['return_on_assets'],
-            mode='lines+markers',
-            name='Return on Assets (%)',
-            line=dict(color='#1f77b4', width=3),
-            marker=dict(size=8),
-            yaxis='y'
-        ))
-        
-        fig_returns.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['return_on_equity'],
-            mode='lines+markers',
-            name='Return on Equity (%)',
-            line=dict(color='#ff7f0e', width=3),
-            marker=dict(size=8),
-            yaxis='y2'
-        ))
-        
-        fig_returns.update_layout(
-            title="Return Metrics Trend",
-            xaxis_title="Year",
-            yaxis=dict(title="ROA (%)", side='left', color='#1f77b4'),
-            yaxis2=dict(title="ROE (%)", side='right', overlaying='y', color='#ff7f0e'),
-            height=400,
-            hovermode='x unified'
-        )
-        
-        st.plotly_chart(fig_returns, use_container_width=True)
-    
-    with col2:
-        # Efficiency and Margin chart
-        fig_efficiency = go.Figure()
-        
-        fig_efficiency.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['net_interest_margin'],
-            mode='lines+markers',
-            name='Net Interest Margin',
-            line=dict(color='#2ca02c', width=3),
-            marker=dict(size=8),
-            yaxis='y'
-        ))
-        
-        fig_efficiency.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['cost_to_income_ratio'],
-            mode='lines+markers',
-            name='Cost-to-Income Ratio',
-            line=dict(color='#d62728', width=3),
-            marker=dict(size=8),
-            yaxis='y2'
-        ))
-        
-        fig_efficiency.update_layout(
-            title="Efficiency & Margin Trends",
-            xaxis_title="Year",
-            yaxis=dict(title="NIM (%)", side='left', color='#2ca02c'),
-            yaxis2=dict(title="C/I Ratio (%)", side='right', overlaying='y', color='#d62728'),
-            height=400,
-            hovermode='x unified'
-        )
-        
-        st.plotly_chart(fig_efficiency, use_container_width=True)
-    
-    st.divider()
-    
-    # Performance Gauges
-    st.subheader("🎯 Current Performance vs Industry Benchmarks")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        # ROA Gauge
-        roa_info = metric_info['return_on_assets']
-        fig_roa_gauge = create_metric_gauge(
-            latest_data['return_on_assets'],
-            roa_info['benchmark']['good'],
-            roa_info['benchmark']['fair'],
-            "Return on Assets",
-            "%"
-        )
-        st.plotly_chart(fig_roa_gauge, use_container_width=True)
-    
-    with col2:
-        # ROE Gauge
-        roe_info = metric_info['return_on_equity']
-        fig_roe_gauge = create_metric_gauge(
-            latest_data['return_on_equity'],
-            roe_info['benchmark']['good'],
-            roe_info['benchmark']['fair'],
-            "Return on Equity",
-            "%"
-        )
-        st.plotly_chart(fig_roe_gauge, use_container_width=True)
-    
-    with col3:
-        # Net Interest Margin Gauge
-        nim_info = metric_info['net_interest_margin']
-        fig_nim_gauge = create_metric_gauge(
-            latest_data['net_interest_margin'],
-            nim_info['benchmark']['good'],
-            nim_info['benchmark']['fair'],
-            "Net Interest Margin",
-            "%"
-        )
-        st.plotly_chart(fig_nim_gauge, use_container_width=True)
-    
-    st.divider()
-    
-    # Profitability Analysis Deep Dive
-    st.subheader("🔍 Profitability Deep Dive")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Earnings per Share trend with additional analysis
-        fig_eps = go.Figure()
-        
-        fig_eps.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['earnings_per_share'],
-            mode='lines+markers',
-            name='Earnings Per Share',
-            line=dict(color='#9467bd', width=4),
-            marker=dict(size=10),
-            fill='tonexty'
-        ))
-        
-        # Add trend line
-        years_numeric = np.arange(len(historical_data))
-        eps_trend = np.polyfit(years_numeric, historical_data['earnings_per_share'], 1)
-        trend_line = np.poly1d(eps_trend)
-        
-        fig_eps.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=trend_line(years_numeric),
-            mode='lines',
-            name='Trend Line',
-            line=dict(color='red', dash='dash', width=2)
-        ))
-        
-        fig_eps.update_layout(
-            title="Earnings Per Share Trend & Projection",
-            xaxis_title="Year",
-            yaxis_title="EPS ($)",
-            height=400
-        )
-        
-        st.plotly_chart(fig_eps, use_container_width=True)
-    
-    with col2:
-        # Profitability efficiency matrix
-        st.markdown("#### Profitability Efficiency Analysis")
-        
-        # Calculate profitability score
-        profit_score = calculate_profitability_score(latest_data)
-        efficiency_score = calculate_efficiency_score(latest_data)
-        
-        col_a, col_b = st.columns(2)
-        with col_a:
-            st.metric("Profitability Score", f"{profit_score:.1f}/10")
-        with col_b:
-            st.metric("Efficiency Score", f"{efficiency_score:.1f}/10")
-        
-        # Profitability matrix visualization
-        fig_matrix = go.Figure()
-        
-        fig_matrix.add_trace(go.Scatter(
-            x=[efficiency_score],
-            y=[profit_score],
-            mode='markers',
-            name=institution_name,
-            marker=dict(size=20, color='red'),
-            text=[institution_name],
-            textposition="top center"
-        ))
-        
-        # Add quadrant background
-        fig_matrix.add_shape(type="rect", x0=0, y0=5, x1=5, y1=10, fillcolor="rgba(255,0,0,0.1)")
-        fig_matrix.add_shape(type="rect", x0=5, y0=5, x1=10, y1=10, fillcolor="rgba(255,255,0,0.1)")  
-        fig_matrix.add_shape(type="rect", x0=0, y0=0, x1=5, y1=5, fillcolor="rgba(255,165,0,0.1)")
-        fig_matrix.add_shape(type="rect", x0=5, y0=0, x1=10, y1=5, fillcolor="rgba(0,128,0,0.1)")
-        
-        fig_matrix.update_layout(
-            title="Profitability vs Efficiency Matrix",
-            xaxis=dict(title="Efficiency Score", range=[0, 10]),
-            yaxis=dict(title="Profitability Score", range=[0, 10]),
-            height=400
-        )
-        
-        st.plotly_chart(fig_matrix, use_container_width=True)
-        
-        # Quadrant interpretation
-        if profit_score >= 5 and efficiency_score >= 5:
-            quadrant = "🟢 High Profit, High Efficiency"
-        elif profit_score >= 5 and efficiency_score < 5:
-            quadrant = "🟡 High Profit, Low Efficiency"
-        elif profit_score < 5 and efficiency_score >= 5:
-            quadrant = "🟠 Low Profit, High Efficiency"
-        else:
-            quadrant = "🔴 Low Profit, Low Efficiency"
-        
-        st.markdown(f"**Position:** {quadrant}")
-    
-    st.divider()
-    
-    # Profitability correlation analysis
-    st.subheader("📊 Profitability Correlation Analysis")
-    
-    correlation_metrics = ['return_on_assets', 'return_on_equity', 'net_interest_margin', 'cost_to_income_ratio']
-    fig_corr = create_correlation_heatmap(
-        historical_data,
-        correlation_metrics,
-        "Profitability Metrics Correlation Matrix"
-    )
-    st.plotly_chart(fig_corr, use_container_width=True)
-    
-    st.divider()
-    
     # Detailed Metric Analysis Tabs
     st.subheader("📋 Detailed Profitability Analysis")
     
@@ -381,9 +150,9 @@ def render_profitability(bank_data, institution_name):
         )
     
     st.markdown(f"""
-    <div style="background-color: #e8f5e8; padding: 20px; border-radius: 10px; margin: 10px 0;">
-    <h4>Profitability Summary</h4>
-    <p style="font-size: 16px; line-height: 1.6;">{section_commentary}</p>
+    <div style="background-color: #e8f5e8; padding: 15px; border-radius: 8px; margin: 10px 0;">
+    <h4 style="margin-top: 0;">Profitability Summary</h4>
+    <p style="font-size: 15px; line-height: 1.5; margin-bottom: 0;">{section_commentary}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -502,7 +271,7 @@ def render_profit_metric_analysis(metric_data, metric_name, institution_name, me
             title=f"{metric_info['name']} Analysis",
             xaxis_title="Years Ago",
             yaxis_title=f"{metric_info['name']} ({metric_info['unit']})",
-            height=400
+            height=300
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -527,7 +296,7 @@ def render_profit_metric_analysis(metric_data, metric_name, institution_name, me
         )
     
     st.markdown(f"""
-    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 10px 0;">
+    <div style="background-color: #f8f9fa; padding: 12px; border-left: 4px solid #007bff; margin: 8px 0;">
     <strong>Expert Analysis:</strong> {commentary}
     </div>
     """, unsafe_allow_html=True)

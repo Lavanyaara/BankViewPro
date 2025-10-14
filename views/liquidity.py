@@ -1,7 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
-from utils.chart_generator import create_trend_chart, create_metric_gauge, create_correlation_heatmap
 from utils.commentary_generator import generate_metric_commentary, generate_section_commentary
 from utils.data_generator import get_metric_info
 
@@ -69,131 +68,6 @@ def render_liquidity(bank_data, institution_name):
     
     st.divider()
     
-    # Liquidity Trends Overview
-    st.subheader("📊 Liquidity Trends Overview")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Regulatory ratios chart (LCR and NSFR)
-        fig_regulatory = go.Figure()
-        
-        fig_regulatory.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['liquidity_coverage_ratio'],
-            mode='lines+markers',
-            name='Liquidity Coverage Ratio',
-            line=dict(color='#1f77b4', width=3),
-            marker=dict(size=8)
-        ))
-        
-        fig_regulatory.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['net_stable_funding_ratio'],
-            mode='lines+markers',
-            name='Net Stable Funding Ratio',
-            line=dict(color='#ff7f0e', width=3),
-            marker=dict(size=8)
-        ))
-        
-        # Add regulatory minimum lines
-        fig_regulatory.add_hline(
-            y=100,
-            line_dash="dash",
-            line_color="red",
-            annotation_text="Regulatory Minimum (100%)"
-        )
-        
-        fig_regulatory.update_layout(
-            title="Regulatory Liquidity Ratios",
-            xaxis_title="Year",
-            yaxis_title="Percentage (%)",
-            height=400,
-            hovermode='x unified'
-        )
-        
-        st.plotly_chart(fig_regulatory, use_container_width=True)
-    
-    with col2:
-        # Operational liquidity metrics
-        fig_operational = go.Figure()
-        
-        fig_operational.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['loan_to_deposit_ratio'],
-            mode='lines+markers',
-            name='Loan-to-Deposit Ratio',
-            line=dict(color='#2ca02c', width=3),
-            marker=dict(size=8),
-            yaxis='y'
-        ))
-        
-        fig_operational.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['cash_ratio'],
-            mode='lines+markers',
-            name='Cash Ratio',
-            line=dict(color='#d62728', width=3),
-            marker=dict(size=8),
-            yaxis='y2'
-        ))
-        
-        fig_operational.update_layout(
-            title="Operational Liquidity Metrics",
-            xaxis_title="Year",
-            yaxis=dict(title="L/D Ratio (%)", side='left', color='#2ca02c'),
-            yaxis2=dict(title="Cash Ratio (%)", side='right', overlaying='y', color='#d62728'),
-            height=400,
-            hovermode='x unified'
-        )
-        
-        st.plotly_chart(fig_operational, use_container_width=True)
-    
-    st.divider()
-    
-    # Performance Gauges
-    st.subheader("🎯 Current Liquidity Position vs Regulatory Requirements")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        # LCR Gauge
-        lcr_info = metric_info['liquidity_coverage_ratio']
-        fig_lcr_gauge = create_metric_gauge(
-            latest_data['liquidity_coverage_ratio'],
-            lcr_info['benchmark']['good'],
-            lcr_info['benchmark']['fair'],
-            "Liquidity Coverage Ratio",
-            "%"
-        )
-        st.plotly_chart(fig_lcr_gauge, use_container_width=True)
-    
-    with col2:
-        # NSFR Gauge
-        nsfr_info = metric_info['net_stable_funding_ratio']
-        fig_nsfr_gauge = create_metric_gauge(
-            latest_data['net_stable_funding_ratio'],
-            nsfr_info['benchmark']['good'],
-            nsfr_info['benchmark']['fair'],
-            "Net Stable Funding Ratio",
-            "%"
-        )
-        st.plotly_chart(fig_nsfr_gauge, use_container_width=True)
-    
-    with col3:
-        # Cash Ratio Gauge
-        cash_info = metric_info['cash_ratio']
-        fig_cash_gauge = create_metric_gauge(
-            latest_data['cash_ratio'],
-            cash_info['benchmark']['good'],
-            cash_info['benchmark']['fair'],
-            "Cash Ratio",
-            "%"
-        )
-        st.plotly_chart(fig_cash_gauge, use_container_width=True)
-    
-    st.divider()
-    
     # Liquidity Risk Assessment
     st.subheader("⚠️ Liquidity Risk Assessment")
     
@@ -229,7 +103,7 @@ def render_liquidity(bank_data, institution_name):
         fig_stress.update_layout(
             title="LCR Stress Test Results",
             yaxis_title="LCR (%)",
-            height=350
+            height=280
         )
         
         st.plotly_chart(fig_stress, use_container_width=True)
@@ -293,7 +167,7 @@ def render_liquidity(bank_data, institution_name):
         
         fig_buffer.update_layout(
             title="Liquidity Buffer Composition",
-            height=400
+            height=300
         )
         
         st.plotly_chart(fig_buffer, use_container_width=True)
@@ -346,7 +220,7 @@ def render_liquidity(bank_data, institution_name):
             title="12-Month Cash Flow Projection",
             xaxis_title="Month",
             yaxis_title="Cash Flow ($ Millions)",
-            height=300
+            height=250
         )
         
         st.plotly_chart(fig_projection, use_container_width=True)
@@ -415,9 +289,9 @@ def render_liquidity(bank_data, institution_name):
         )
     
     st.markdown(f"""
-    <div style="background-color: #e1f5fe; padding: 20px; border-radius: 10px; margin: 10px 0;">
-    <h4>Liquidity Summary</h4>
-    <p style="font-size: 16px; line-height: 1.6;">{section_commentary}</p>
+    <div style="background-color: #e1f5fe; padding: 15px; border-radius: 8px; margin: 10px 0;">
+    <h4 style="margin-top: 0;">Liquidity Summary</h4>
+    <p style="font-size: 15px; line-height: 1.5; margin-bottom: 0;">{section_commentary}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -555,7 +429,7 @@ def render_liquidity_metric_analysis(metric_data, metric_name, institution_name,
             title=f"{metric_info['name']} Historical Trend",
             xaxis_title="Years Ago",
             yaxis_title=f"{metric_info['name']} ({metric_info['unit']})",
-            height=400
+            height=300
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -581,7 +455,7 @@ def render_liquidity_metric_analysis(metric_data, metric_name, institution_name,
         )
     
     st.markdown(f"""
-    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #17a2b8; margin: 10px 0;">
+    <div style="background-color: #f8f9fa; padding: 12px; border-left: 4px solid #17a2b8; margin: 8px 0;">
     <strong>Expert Analysis:</strong> {commentary}
     </div>
     """, unsafe_allow_html=True)

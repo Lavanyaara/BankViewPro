@@ -1,7 +1,5 @@
 import streamlit as st
 import plotly.graph_objects as go
-import numpy as np
-from utils.chart_generator import create_trend_chart, create_metric_gauge, create_correlation_heatmap
 from utils.commentary_generator import generate_metric_commentary, generate_section_commentary
 from utils.data_generator import get_metric_info
 
@@ -71,181 +69,6 @@ def render_asset_quality(bank_data, institution_name):
     
     st.divider()
     
-    # Asset Quality Overview Chart
-    st.subheader("📊 Asset Quality Trends Overview")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # NPL and Provisions trend (inverted scale since lower is better)
-        fig_quality = go.Figure()
-        
-        fig_quality.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['npl_ratio'],
-            mode='lines+markers',
-            name='NPL Ratio',
-            line=dict(color='#d62728', width=3),
-            marker=dict(size=8),
-            yaxis='y'
-        ))
-        
-        fig_quality.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['loan_loss_provisions'],
-            mode='lines+markers',
-            name='Loan Loss Provisions',
-            line=dict(color='#ff7f0e', width=3),
-            marker=dict(size=8),
-            yaxis='y'
-        ))
-        
-        fig_quality.update_layout(
-            title="Problem Assets Trend (Lower is Better)",
-            xaxis_title="Year",
-            yaxis_title="Percentage (%)",
-            height=400,
-            hovermode='x unified'
-        )
-        
-        st.plotly_chart(fig_quality, use_container_width=True)
-    
-    with col2:
-        # Coverage and Classification
-        fig_coverage = go.Figure()
-        
-        fig_coverage.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['coverage_ratio'],
-            mode='lines+markers',
-            name='Coverage Ratio',
-            line=dict(color='#2ca02c', width=3),
-            marker=dict(size=8),
-            yaxis='y'
-        ))
-        
-        # Add secondary y-axis for asset classification
-        fig_coverage.add_trace(go.Scatter(
-            x=historical_data['year'],
-            y=historical_data['asset_classification'],
-            mode='lines+markers',
-            name='Asset Classification Score',
-            line=dict(color='#9467bd', width=3),
-            marker=dict(size=8),
-            yaxis='y2'
-        ))
-        
-        fig_coverage.update_layout(
-            title="Coverage & Classification Trends",
-            xaxis_title="Year",
-            yaxis=dict(title="Coverage Ratio (%)", side='left'),
-            yaxis2=dict(title="Classification Score", side='right', overlaying='y'),
-            height=400,
-            hovermode='x unified'
-        )
-        
-        st.plotly_chart(fig_coverage, use_container_width=True)
-    
-    st.divider()
-    
-    # Performance Gauges
-    st.subheader("🎯 Current Performance vs Industry Benchmarks")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        # NPL Ratio Gauge (lower is better)
-        npl_info = metric_info['npl_ratio']
-        fig_npl_gauge = create_metric_gauge(
-            latest_data['npl_ratio'],
-            npl_info['benchmark']['good'],
-            npl_info['benchmark']['fair'],
-            "NPL Ratio",
-            "%"
-        )
-        st.plotly_chart(fig_npl_gauge, use_container_width=True)
-    
-    with col2:
-        # Coverage Ratio Gauge (higher is better)
-        coverage_info = metric_info['coverage_ratio']
-        fig_coverage_gauge = create_metric_gauge(
-            latest_data['coverage_ratio'],
-            coverage_info['benchmark']['good'],
-            coverage_info['benchmark']['fair'],
-            "Coverage Ratio",
-            "%"
-        )
-        st.plotly_chart(fig_coverage_gauge, use_container_width=True)
-    
-    with col3:
-        # Provisions Gauge (lower is better)
-        provisions_info = metric_info['loan_loss_provisions']
-        fig_provisions_gauge = create_metric_gauge(
-            latest_data['loan_loss_provisions'],
-            provisions_info['benchmark']['good'],
-            provisions_info['benchmark']['fair'],
-            "Loan Loss Provisions",
-            "%"
-        )
-        st.plotly_chart(fig_provisions_gauge, use_container_width=True)
-    
-    st.divider()
-    
-    # Asset Quality Deep Dive
-    st.subheader("🔍 Asset Quality Deep Dive")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Asset quality correlation heatmap
-        correlation_metrics = ['npl_ratio', 'loan_loss_provisions', 'coverage_ratio', 'asset_classification']
-        fig_corr = create_correlation_heatmap(
-            historical_data,
-            correlation_metrics,
-            "Asset Quality Metrics Correlation"
-        )
-        st.plotly_chart(fig_corr, use_container_width=True)
-    
-    with col2:
-        # Asset quality risk assessment
-        st.markdown("#### Risk Assessment")
-        
-        # Calculate risk indicators
-        npl_trend = latest_data['npl_ratio'] - historical_data['npl_ratio'].iloc[0]
-        coverage_adequacy = latest_data['coverage_ratio']
-        provisions_trend = latest_data['loan_loss_provisions'] - historical_data['loan_loss_provisions'].iloc[0]
-        
-        risk_score = calculate_asset_quality_risk_score(latest_data)
-        
-        st.metric("Asset Quality Risk Score", f"{risk_score:.1f}/10", 
-                 help="Higher scores indicate higher risk")
-        
-        # Risk factors
-        st.markdown("**Key Risk Factors:**")
-        
-        if npl_trend > 0.5:
-            st.markdown("🔴 Rising NPL trend")
-        elif npl_trend < -0.2:
-            st.markdown("🟢 Improving NPL trend")
-        else:
-            st.markdown("🟡 Stable NPL levels")
-        
-        if coverage_adequacy < 80:
-            st.markdown("🔴 Low coverage ratio")
-        elif coverage_adequacy > 100:
-            st.markdown("🟢 Strong coverage ratio")
-        else:
-            st.markdown("🟡 Adequate coverage")
-        
-        if provisions_trend > 0.3:
-            st.markdown("🔴 Rising provisions")
-        elif provisions_trend < -0.1:
-            st.markdown("🟢 Declining provisions")
-        else:
-            st.markdown("🟡 Stable provisions")
-    
-    st.divider()
-    
     # Detailed Metric Analysis Tabs
     st.subheader("📋 Detailed Metric Analysis")
     
@@ -308,9 +131,9 @@ def render_asset_quality(bank_data, institution_name):
         )
     
     st.markdown(f"""
-    <div style="background-color: #fff3cd; padding: 20px; border-radius: 10px; margin: 10px 0;">
-    <h4>Asset Quality Summary</h4>
-    <p style="font-size: 16px; line-height: 1.6;">{section_commentary}</p>
+    <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0;">
+    <h4 style="margin-top: 0;">Asset Quality Summary</h4>
+    <p style="font-size: 15px; line-height: 1.5; margin-bottom: 0;">{section_commentary}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -424,7 +247,7 @@ def render_asset_metric_analysis(metric_data, metric_name, institution_name, met
             title=f"{metric_info['name']} Historical Trend",
             xaxis_title="Year",
             yaxis_title=f"{metric_info['name']} ({metric_info['unit']})",
-            height=400
+            height=300
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -439,7 +262,7 @@ def render_asset_metric_analysis(metric_data, metric_name, institution_name, met
         )
     
     st.markdown(f"""
-    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #28a745; margin: 10px 0;">
+    <div style="background-color: #f8f9fa; padding: 12px; border-left: 4px solid #28a745; margin: 8px 0;">
     <strong>Analysis:</strong> {commentary}
     </div>
     """, unsafe_allow_html=True)
