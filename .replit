@@ -1,4 +1,4 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "nodejs-20"]
 [agent]
 integrations = ["python_openai:1.0.0"]
 
@@ -37,6 +37,10 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 34795
+externalPort = 3001
 
 [[ports]]
 localPort = 36451
