@@ -4,6 +4,14 @@
 
 This is a financial analytics dashboard built with Streamlit for analyzing and reviewing the creditworthiness of major US banks and broker-dealers. The application provides comprehensive analysis across multiple financial dimensions including capitalization, asset quality, profitability, and liquidity. It features AI-powered commentary generation using OpenAI's GPT models to provide insights on financial trends and metrics. The dashboard includes interactive visualizations, trend analysis, scoring mechanisms, and comparative benchmarking tools to support credit review decisions.
 
+## Recent Changes
+
+### October 2025 - Dashboard Redesign
+- **Navigation Restructure**: Removed sidebar page navigation, implemented tab-only navigation system
+- **Overview Tab Optimization**: Reorganized layout with Executive Summary moved below Executive Overview; removed Performance Radar and Key Financial Trends visualizations; removed Risk Assessment Matrix legends
+- **Capitalization Tab Simplification**: Removed "Five-Year Capital Trends" and "Current Performance vs Benchmarks" sections; optimized remaining content to fit single-page view without scrollbar (reduced chart heights to 300px, compacted spacing)
+- **Color Theme**: Applied sophisticated hunter green (#355E3B) and cream (#FFFDD0) color palette with orange, mint, and yellow accents throughout dashboard
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
