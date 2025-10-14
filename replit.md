@@ -9,7 +9,10 @@ This is a financial analytics dashboard built with Streamlit for analyzing and r
 ### October 2025 - Dashboard Redesign
 - **Navigation Restructure**: Removed sidebar page navigation, implemented tab-only navigation system
 - **Overview Tab Optimization**: Reorganized layout with Executive Summary moved below Executive Overview; removed Performance Radar and Key Financial Trends visualizations; removed Risk Assessment Matrix legends
-- **Capitalization Tab Simplification**: Removed "Five-Year Capital Trends" and "Current Performance vs Benchmarks" sections; optimized remaining content to fit single-page view without scrollbar (reduced chart heights to 300px, compacted spacing)
+- **Capitalization Tab Simplification**: Removed "Five-Year Capital Trends" and "Current Performance vs Benchmarks" sections; optimized content (reduced chart heights to 300px, compacted spacing)
+- **Asset Quality Tab Simplification**: Removed "Asset Quality Trends Overview", "Current Performance vs Industry Benchmarks", and "Asset Quality Deep Dive" sections; optimized content (reduced chart heights to 300px, compacted spacing)
+- **Profitability Tab Simplification**: Removed "Profitability Trends Overview", "Current Performance vs Industry Benchmarks", "Profitability Deep Dive", and "Profitability Correlation Analysis" sections; optimized content (reduced chart heights to 300px, compacted spacing)
+- **Liquidity Tab Simplification**: Removed "Liquidity Trends Overview" and "Current Liquidity Position vs Regulatory Requirements" sections; optimized content (reduced chart heights to 250-300px, compacted spacing)
 - **Color Theme**: Applied sophisticated hunter green (#355E3B) and cream (#FFFDD0) color palette with orange, mint, and yellow accents throughout dashboard
 
 ## User Preferences
