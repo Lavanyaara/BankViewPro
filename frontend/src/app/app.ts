@@ -19,6 +19,9 @@ export class App implements OnInit {
   commentary = signal<Record<string, string>>({});
   loading = signal<boolean>(false);
 
+  // Regular property for ngModel binding
+  selectedInstitutionName = '';
+
   constructor(private apiService: ApiService) {}
 
   ngOnInit() {
@@ -30,6 +33,7 @@ export class App implements OnInit {
       next: (data) => {
         this.institutions.set(data);
         if (data.length > 0) {
+          this.selectedInstitutionName = data[0].name;
           this.selectInstitution(data[0].name);
         }
       },
@@ -37,8 +41,13 @@ export class App implements OnInit {
     });
   }
 
+  onInstitutionChange() {
+    this.selectInstitution(this.selectedInstitutionName);
+  }
+
   selectInstitution(name: string) {
     this.selectedInstitution.set(name);
+    this.selectedInstitutionName = name;
     this.loading.set(true);
     
     this.apiService.getInstitutionDetail(name).subscribe({
