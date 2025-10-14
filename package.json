@@ -10,6 +10,15 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@angular/cli": "^20.3.5"
+    "@angular/cli": "^20.3.5",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.7.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "openai": "^6.3.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   }
 }
