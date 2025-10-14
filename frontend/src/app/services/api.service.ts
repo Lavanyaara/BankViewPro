@@ -49,6 +49,22 @@ export interface CategoryScores {
   rating: string;
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+export interface ChatRequest {
+  institutionName: string;
+  message: string;
+  conversationHistory: ChatMessage[];
+}
+
+export interface ChatResponse {
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -78,5 +94,9 @@ export class ApiService {
 
   getMetrics(): Observable<any> {
     return this.http.get(`${this.apiUrl}/metrics`);
+  }
+
+  sendChatMessage(request: ChatRequest): Observable<ChatResponse> {
+    return this.http.post<ChatResponse>(`${this.apiUrl}/chat`, request);
   }
 }

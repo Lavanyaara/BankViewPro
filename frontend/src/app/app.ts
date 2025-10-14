@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Institution, InstitutionDetail, CategoryScores } from './services/api.service';
+import { ApiService, Institution, InstitutionDetail, CategoryScores, ChatMessage } from './services/api.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +18,11 @@ export class App implements OnInit {
   activeTab = signal<string>('overview');
   commentary = signal<Record<string, string>>({});
   loading = signal<boolean>(false);
+
+  // Chat state
+  chatMessages = signal<ChatMessage[]>([]);
+  chatInput = '';
+  chatLoading = signal<boolean>(false);
 
   // Regular property for ngModel binding
   selectedInstitutionName = '';
@@ -49,6 +54,7 @@ export class App implements OnInit {
     this.selectedInstitution.set(name);
     this.selectedInstitutionName = name;
     this.loading.set(true);
+    this.chatMessages.set([]); // Clear chat history when institution changes
     
     this.apiService.getInstitutionDetail(name).subscribe({
       next: (data) => {
@@ -109,5 +115,42 @@ export class App implements OnInit {
     if (score >= 5.5) return '#F9A825'; // Yellow
     if (score >= 4.0) return '#FF8F00'; // Orange
     return '#C62828'; // Red
+  }
+
+  sendChatMessage() {
+    if (!this.chatInput.trim() || !this.selectedInstitution()) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: this.chatInput,
+      timestamp: new Date()
+    };
+
+    this.chatMessages.set([...this.chatMessages(), userMessage]);
+    const messageToSend = this.chatInput;
+    this.chatInput = '';
+    this.chatLoading.set(true);
+
+    this.apiService.sendChatMessage({
+      institutionName: this.selectedInstitution(),
+      message: messageToSend,
+      conversationHistory: this.chatMessages().slice(0, -1)
+    }).subscribe({
+      next: (response) => {
+        const assistantMessage: ChatMessage = {
+          role: 'assistant',
+          content: response.message,
+          timestamp: new Date()
+        };
+        this.chatMessages.set([...this.chatMessages(), assistantMessage]);
+        this.chatLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error sending chat message:', err);
+        this.chatLoading.set(false);
+      }
+    });
   }
 }
