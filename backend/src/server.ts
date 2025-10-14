@@ -8,6 +8,8 @@ import { EdgarService } from './utils/edgar-service';
 import { SECAnalysisService } from './utils/sec-analysis-service';
 import { MetricsMapper } from './utils/metrics-mapper';
 import { EdgarCache } from './utils/edgar-cache';
+import { FINRAService } from './utils/finra-service';
+import { FFIECService } from './utils/ffiec-service';
 
 dotenv.config();
 
@@ -20,6 +22,8 @@ app.use(express.json());
 const bankData = generateSampleData();
 const metricInfo = getMetricInfo();
 const analysisService = new SECAnalysisService();
+const finraService = new FINRAService();
+const ffiecService = new FFIECService();
 
 // Helper function to extract category-specific text from EDGAR analysis
 function extractCategoryFromAnalysis(analysisText: string, category: string): string | null {
@@ -60,40 +64,78 @@ app.get('/api/institutions/:name', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
+  const institutionType = bankData[name].institution_type;
+  
   try {
-    // Try to use cached EDGAR data first
+    // Try to use cached data first
     const cached = EdgarCache.get(name);
     if (cached) {
-      console.log(`Using cached EDGAR data for ${name}`);
+      console.log(`Using cached data for ${name} (${institutionType})`);
       return res.json(cached.data);
     }
     
-    // Fetch and analyze SEC filings
-    console.log(`Fetching SEC filings for ${name}...`);
-    const { tenKText, tenQText, filingInfo } = await EdgarService.getFilingDocumentsForAnalysis(name);
+    let combinedAnalysisText = '';
+    let analysisResult;
     
-    if (!tenKText && !tenQText) {
-      console.log(`No SEC filings found for ${name}, using synthetic data`);
+    if (institutionType === 'Bank') {
+      // Banks: Fetch SEC filings + FFIEC Call Reports
+      console.log(`Fetching Bank data for ${name}...`);
+      
+      // Get SEC filings
+      const { tenKText, tenQText } = await EdgarService.getFilingDocumentsForAnalysis(name);
+      
+      // Get FFIEC Call Report data
+      const callReportText = await ffiecService.getCallReportText(name);
+      
+      // Combine all available data sources
+      if (tenKText) combinedAnalysisText += `\n\n=== SEC 10-K FILING ===\n${tenKText.slice(0, 30000)}`;
+      if (tenQText) combinedAnalysisText += `\n\n=== SEC 10-Q FILING ===\n${tenQText.slice(0, 20000)}`;
+      if (callReportText) combinedAnalysisText += `\n\n=== FFIEC CALL REPORT ===\n${callReportText}`;
+      
+      if (combinedAnalysisText) {
+        console.log(`Analyzing Bank filings and call reports for ${name}...`);
+        analysisResult = await analysisService.analyzeFilings(name, combinedAnalysisText, '');
+      }
+      
+    } else {
+      // Broker Dealers: Fetch FINRA data + SEC filings if available
+      console.log(`Fetching Broker Dealer data for ${name}...`);
+      
+      // Get FINRA BrokerCheck data
+      const finraText = await finraService.getFirmText(name);
+      
+      // Get SEC filings (broker-dealers often have 10-K too)
+      const { tenKText, tenQText } = await EdgarService.getFilingDocumentsForAnalysis(name);
+      
+      // Combine all available data sources
+      if (finraText) combinedAnalysisText += `\n\n=== FINRA BROKERCHECK DATA ===\n${finraText}`;
+      if (tenKText) combinedAnalysisText += `\n\n=== SEC 10-K FILING ===\n${tenKText.slice(0, 30000)}`;
+      if (tenQText) combinedAnalysisText += `\n\n=== SEC 10-Q FILING ===\n${tenQText.slice(0, 20000)}`;
+      
+      if (combinedAnalysisText) {
+        console.log(`Analyzing Broker Dealer filings and FINRA data for ${name}...`);
+        analysisResult = await analysisService.analyzeFilings(name, combinedAnalysisText, '');
+      }
+    }
+    
+    if (!analysisResult || !combinedAnalysisText) {
+      console.log(`No regulatory data found for ${name}, using synthetic data`);
       return res.json(bankData[name]);
     }
     
-    // Analyze filings with AI
-    console.log(`Analyzing SEC filings for ${name}...`);
-    const analysis = await analysisService.analyzeFilings(name, tenKText, tenQText);
-    
     // Extract metrics from analysis
-    const extractedMetrics = analysisService.extractMetrics(analysis.fullAnalysis);
+    const extractedMetrics = analysisService.extractMetrics(analysisResult.fullAnalysis);
     
     // Map to dashboard format
-    const institutionData = MetricsMapper.mapToInstitution(name, extractedMetrics, analysis.fullAnalysis);
+    const institutionData = MetricsMapper.mapToInstitution(name, extractedMetrics, analysisResult.fullAnalysis);
     
     // Cache the result
-    EdgarCache.set(name, institutionData, analysis.fullAnalysis);
+    EdgarCache.set(name, institutionData, analysisResult.fullAnalysis);
     
-    console.log(`Successfully fetched and analyzed EDGAR data for ${name}`);
+    console.log(`Successfully fetched and analyzed regulatory data for ${name} (${institutionType})`);
     res.json(institutionData);
   } catch (error) {
-    console.error(`Error fetching EDGAR data for ${name}:`, error);
+    console.error(`Error fetching regulatory data for ${name}:`, error);
     // Fallback to synthetic data
     console.log(`Falling back to synthetic data for ${name}`);
     res.json(bankData[name]);
