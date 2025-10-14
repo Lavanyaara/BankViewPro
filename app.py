@@ -5,12 +5,12 @@ from datetime import datetime, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
 
-# Import page modules
-from pages.overview import render_overview
-from pages.capitalization import render_capitalization
-from pages.asset_quality import render_asset_quality
-from pages.profitability import render_profitability
-from pages.liquidity import render_liquidity
+# Import view modules
+from views.overview import render_overview
+from views.capitalization import render_capitalization
+from views.asset_quality import render_asset_quality
+from views.profitability import render_profitability
+from views.liquidity import render_liquidity
 
 # Import utilities
 from utils.data_generator import generate_sample_data
@@ -23,6 +23,87 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded"
     )
+    
+    # Apply custom color theme CSS
+    st.markdown("""
+        <style>
+        /* Main color theme: Hunter Green and Cream with Orange, Mint, Yellow accents */
+        :root {
+            --hunter-green: #355E3B;
+            --cream: #FFFDD0;
+            --dark-cream: #F5E6D3;
+            --orange: #FF8C42;
+            --mint: #98D8C8;
+            --yellow: #F7B32B;
+            --light-green: #D4E7D0;
+        }
+        
+        /* Header styling */
+        h1, h2, h3 {
+            color: #355E3B !important;
+        }
+        
+        /* Tabs styling */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+            background-color: #F5E6D3;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            background-color: #FFFDD0;
+            color: #355E3B;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+        
+        .stTabs [aria-selected="true"] {
+            background-color: #355E3B !important;
+            color: #FFFDD0 !important;
+        }
+        
+        /* Metric cards */
+        [data-testid="stMetricValue"] {
+            color: #355E3B;
+            font-weight: 700;
+        }
+        
+        /* Sidebar */
+        [data-testid="stSidebar"] {
+            background-color: #F5E6D3;
+        }
+        
+        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+            color: #355E3B !important;
+        }
+        
+        /* Buttons */
+        .stButton button {
+            background-color: #355E3B;
+            color: #FFFDD0;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .stButton button:hover {
+            background-color: #2A4A2E;
+            color: #FFFDD0;
+        }
+        
+        /* Info boxes */
+        .stAlert {
+            background-color: #D4E7D0;
+            color: #355E3B;
+        }
+        
+        /* Main content background */
+        .main {
+            background-color: #FFFEF9;
+        }
+        </style>
+    """, unsafe_allow_html=True)
     
     st.title("🏦 Credit Review Dashboard")
     st.subheader("Comprehensive Analytics for US Banks and Broker Dealers")
