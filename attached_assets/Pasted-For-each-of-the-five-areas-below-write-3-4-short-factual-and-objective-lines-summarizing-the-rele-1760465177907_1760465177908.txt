@@ -1,0 +1,101 @@
+For each of the five areas below, write 3–4 short, factual, and objective lines summarizing the relevant information. Every line must be based solely on the provided documents — do not include any external data, interpretation, or assumptions.
+After each line, cite the exact source in parentheses — mention the document name and location (e.g., 10-K p. 88, 10-Q Table 7, Call Report – Schedule RC-R Part I).
+If there is no explicit information about a point, clearly write: “No explicit information available in the documents regarding this point.”
+Keep your writing concise and analytical, using quantitative figures where available (e.g., capital ratios, profitability metrics, loss provisions, etc.).
+
+
+1. Business Environment
+
+
+Summarize the key macroeconomic and market factors affecting the company’s business during the reporting period (e.g., interest rate trends, inflation, demand patterns, or credit conditions).
+
+
+Include any major external events, policy or regulatory changes, or industry-level developments that directly influenced the company’s performance.
+
+
+Quantify the effects where possible using figures explicitly disclosed in the documents (e.g., NIM, cost of funds, credit losses, GDP impact).
+
+
+Focus on factual cause-and-effect relationships mentioned in the filings.
+
+
+2. Company’s Market Position
+
+
+Describe the company’s position in its sector, including details on market share, customer base, geographic reach, and product or service diversification.
+
+
+Identify major business segments and summarize their contribution to revenue and profitability.
+
+
+Include relevant performance metrics such as ROA, ROE, or net income trends to contextualize market strength.
+
+
+Mention competitive dynamics, partnerships, or key customer programs if explicitly stated in the filings.
+
+
+3. Risk Management
+
+
+Identify the major categories of risk the company faces (credit, liquidity, market, operational, regulatory, etc.).
+
+
+Highlight specific risk exposures or incidents disclosed, such as delinquency rates, charge-offs, or capital buffer levels.
+
+
+Note any stress-test outcomes, concentration risks, or emerging threats discussed in the reports.
+
+
+Focus on measurable risk indicators and actual exposures rather than policy descriptions or generalized statements.
+
+
+4. Management Quality
+
+
+Summarize the company’s governance and oversight structure, including board composition, independent directors, and committee arrangements (audit, risk, compensation, etc.).
+
+
+Include any disclosed events such as mergers, acquisitions, CEO transitions, restructuring, or changes in executive management.
+
+
+Reference formal governance disclosures or charters mentioned in the filings.
+
+
+Do not include any subjective judgments or external assessments of management capability.
+
+
+5. Regulatory Compliance, Legal Proceedings, and Liquidity Risk
+
+
+Summarize the company’s regulatory framework, supervision structure, and capital adequacy standards (e.g., CET1, Tier 1, leverage ratios).
+
+
+Include any information on liquidity management, such as reserves, funding sources, or liquidity coverage ratios, citing relevant tables or schedules.
+
+
+Explicitly identify any ongoing legal proceedings, investigations, or litigations disclosed in the filings, and note the nature of the exposure (financial or operational).
+
+
+Mention whether the filings indicate that such exposures are covered, immaterial, or materially significant to the company’s financial position.
+
+
+Cite all legal and compliance references (e.g., 10-K Item 3 – Legal Proceedings, 10-Q Part II Item 1A – Risk Factors, Call Report – Schedule RC-O).
+
+
+
+Formatting instructions:
+
+
+Use numbered sections (1–5).
+
+
+Keep each section to 3–4 concise bullet points.
+
+
+Place document references after each line.
+
+
+Do not infer or assume; include only what is explicitly written in the provided documents.
+
+
+Maintain a neutral, analytical tone focused on factual disclosure.
