@@ -36,8 +36,32 @@ export function generateSampleData(): Record<string, Institution> {
     "U.S. Bancorp",
     "Truist Financial Corporation",
     "PNC Financial Services Group",
-    "Charles Schwab Corporation"
+    "Charles Schwab Corporation",
+    "Fidelity Investments",
+    "Interactive Brokers",
+    "LPL Financial",
+    "Raymond James Financial",
+    "E*TRADE Financial"
   ];
+  
+  // Define institution types explicitly
+  const institutionTypes: Record<string, 'Bank' | 'Broker Dealer'> = {
+    "JPMorgan Chase & Co.": "Bank",
+    "Bank of America Corporation": "Bank",
+    "Wells Fargo & Company": "Bank",
+    "Citigroup Inc.": "Bank",
+    "Goldman Sachs Group Inc.": "Bank", // Bank holding company with broker-dealer subsidiary
+    "Morgan Stanley": "Bank", // Bank holding company with broker-dealer subsidiary
+    "U.S. Bancorp": "Bank",
+    "Truist Financial Corporation": "Bank",
+    "PNC Financial Services Group": "Bank",
+    "Charles Schwab Corporation": "Broker Dealer",
+    "Fidelity Investments": "Broker Dealer",
+    "Interactive Brokers": "Broker Dealer",
+    "LPL Financial": "Broker Dealer",
+    "Raymond James Financial": "Broker Dealer",
+    "E*TRADE Financial": "Broker Dealer"
+  };
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 4 + i);
@@ -102,10 +126,10 @@ export function generateSampleData(): Record<string, Institution> {
 
     const institutionData: Institution = {
       institution_name: institution,
-      institution_type: institution.includes('Bank') ? 'Bank' : 'Broker Dealer',
+      institution_type: institutionTypes[institution],
       assets: baseRwa * (rand() * (8 - 3) + 3),
       employees: Math.floor(rand() * (250000 - 50000) + 50000),
-      branches: institution.includes('Bank') 
+      branches: institutionTypes[institution] === 'Bank'
         ? Math.floor(rand() * (5000 - 1000) + 1000)
         : Math.floor(rand() * (500 - 100) + 100),
       historical_data: yearlyData
