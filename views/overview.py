@@ -77,17 +77,17 @@ def render_overview(bank_data, institution_name):
         
         fig_scores = go.Figure()
         
-        # Color code based on score
+        # Color code based on score - using new theme colors
         colors = []
         for score in scores:
             if score >= 7.5:
-                colors.append('#2E8B57')  # Green
+                colors.append('#355E3B')  # Hunter Green
             elif score >= 6.0:
-                colors.append('#4169E1')  # Blue
+                colors.append('#98D8C8')  # Mint
             elif score >= 4.5:
-                colors.append('#FF8C00')  # Orange
+                colors.append('#FF8C42')  # Orange
             else:
-                colors.append('#DC143C')  # Red
+                colors.append('#F7B32B')  # Yellow (warning)
         
         fig_scores.add_trace(go.Bar(
             x=[cat.title() for cat in categories],
@@ -109,85 +109,18 @@ def render_overview(bank_data, institution_name):
     
     st.divider()
     
-    # Performance Radar Chart
-    col1, col2 = st.columns(2)
+    # Executive Summary - moved here from below
+    st.subheader("📊 Executive Summary")
     
-    with col1:
-        st.subheader("Performance Radar")
-        
-        # Create radar chart with key metrics
-        key_metrics = [
-            'capital_adequacy_ratio',
-            'npl_ratio', 
-            'return_on_assets',
-            'liquidity_coverage_ratio'
-        ]
-        
-        metric_info = get_metric_info()
-        all_benchmarks = {}
-        for category, metrics in metric_info.items():
-            all_benchmarks.update(metrics)
-        
-        fig_radar = create_performance_radar(
-            latest_data,
-            all_benchmarks,
-            key_metrics,
-            institution_name
-        )
-        
-        st.plotly_chart(fig_radar, use_container_width=True)
+    with st.spinner("Generating comprehensive analysis..."):
+        commentary = generate_overall_commentary(bank_data, institution_name, overall_score)
     
-    with col2:
-        st.subheader("Key Financial Trends")
-        
-        # Multi-metric trend chart
-        fig_trends = go.Figure()
-        
-        years = bank_data['historical_data']['year']
-        
-        # Normalize metrics for comparison (scale to 0-100)
-        car_norm = (bank_data['historical_data']['capital_adequacy_ratio'] / 20) * 100
-        roa_norm = (bank_data['historical_data']['return_on_assets'] / 2) * 100
-        npl_norm = (2 - bank_data['historical_data']['npl_ratio']) / 2 * 100  # Inverted since lower is better
-        lcr_norm = (bank_data['historical_data']['liquidity_coverage_ratio'] / 150) * 100
-        
-        fig_trends.add_trace(go.Scatter(
-            x=years, y=car_norm,
-            mode='lines+markers',
-            name='Capital Adequacy',
-            line=dict(color='#1f77b4')
-        ))
-        
-        fig_trends.add_trace(go.Scatter(
-            x=years, y=roa_norm,
-            mode='lines+markers',
-            name='Return on Assets',
-            line=dict(color='#ff7f0e')
-        ))
-        
-        fig_trends.add_trace(go.Scatter(
-            x=years, y=npl_norm,
-            mode='lines+markers',
-            name='Asset Quality',
-            line=dict(color='#2ca02c')
-        ))
-        
-        fig_trends.add_trace(go.Scatter(
-            x=years, y=lcr_norm,
-            mode='lines+markers',
-            name='Liquidity Coverage',
-            line=dict(color='#d62728')
-        ))
-        
-        fig_trends.update_layout(
-            title="Normalized Performance Trends",
-            yaxis=dict(title="Performance Index (0-100)", range=[0, 120]),
-            xaxis_title="Year",
-            height=400,
-            hovermode='x unified'
-        )
-        
-        st.plotly_chart(fig_trends, use_container_width=True)
+    st.markdown(f"""
+    <div style="background-color: #D4E7D0; padding: 20px; border-radius: 10px; margin: 10px 0; border-left: 5px solid #355E3B;">
+    <h4 style="color: #355E3B; margin-top: 0;">Credit Analysis Summary</h4>
+    <p style="font-size: 16px; line-height: 1.6; color: #2A4A2E;">{commentary}</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.divider()
     
@@ -217,19 +150,6 @@ def render_overview(bank_data, institution_name):
     
     st.divider()
     
-    # Executive Commentary
-    st.subheader("📊 Executive Summary")
-    
-    with st.spinner("Generating comprehensive analysis..."):
-        commentary = generate_overall_commentary(bank_data, institution_name, overall_score)
-    
-    st.markdown(f"""
-    <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; margin: 10px 0;">
-    <h4>Credit Analysis Summary</h4>
-    <p style="font-size: 16px; line-height: 1.6;">{commentary}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
     # Risk Assessment Matrix
     st.subheader("🎯 Risk Assessment Matrix")
     
@@ -238,19 +158,16 @@ def render_overview(bank_data, institution_name):
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("**🟢 Low Risk**")
         for factor in risk_factors['low']:
-            st.markdown(f"• {factor}")
+            st.markdown(f"🟢 {factor}")
     
     with col2:
-        st.markdown("**🟡 Medium Risk**")
         for factor in risk_factors['medium']:
-            st.markdown(f"• {factor}")
+            st.markdown(f"🟡 {factor}")
     
     with col3:
-        st.markdown("**🔴 High Risk**")
         for factor in risk_factors['high']:
-            st.markdown(f"• {factor}")
+            st.markdown(f"🔴 {factor}")
 
 def calculate_management_quality_score(historical_data):
     """Calculate management quality score based on performance consistency and trends."""
