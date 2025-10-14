@@ -126,9 +126,9 @@ def render_capitalization(bank_data, institution_name):
         )
     
     st.markdown(f"""
-    <div style="background-color: #e6f3ff; padding: 20px; border-radius: 10px; margin: 10px 0;">
-    <h4>Capitalization Summary</h4>
-    <p style="font-size: 16px; line-height: 1.6;">{section_commentary}</p>
+    <div style="background-color: #e6f3ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+    <h4 style="margin-top: 0;">Capitalization Summary</h4>
+    <p style="font-size: 15px; line-height: 1.5; margin-bottom: 0;">{section_commentary}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -212,7 +212,7 @@ def render_metric_analysis(metric_data, metric_name, institution_name, metric_in
             title=f"{metric_info['name']} Trend Analysis",
             xaxis_title="Years Ago",
             yaxis_title=f"{metric_info['name']} ({metric_info['unit']})",
-            height=400
+            height=300
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -227,7 +227,7 @@ def render_metric_analysis(metric_data, metric_name, institution_name, metric_in
         )
     
     st.markdown(f"""
-    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 10px 0;">
+    <div style="background-color: #f8f9fa; padding: 12px; border-left: 4px solid #007bff; margin: 8px 0;">
     <strong>Analysis:</strong> {commentary}
     </div>
     """, unsafe_allow_html=True)
