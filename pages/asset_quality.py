@@ -387,7 +387,7 @@ def render_asset_metric_analysis(metric_data, metric_name, institution_name, met
         fig = go.Figure()
         
         fig.add_trace(go.Scatter(
-            x=historical_data['year'],
+            x=list(range(len(metric_data))),
             y=metric_data,
             mode='lines+markers',
             name=metric_info['name'],
