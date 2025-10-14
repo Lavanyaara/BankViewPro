@@ -1,6 +1,5 @@
 import streamlit as st
 import plotly.graph_objects as go
-from utils.chart_generator import create_trend_chart, create_metric_gauge
 from utils.commentary_generator import generate_metric_commentary, generate_section_commentary
 from utils.data_generator import get_metric_info
 
