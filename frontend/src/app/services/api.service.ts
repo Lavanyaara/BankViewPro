@@ -59,6 +59,7 @@ export interface ChatRequest {
   institutionName: string;
   message: string;
   conversationHistory: ChatMessage[];
+  useAlternateFlow?: boolean;
 }
 
 export interface ChatResponse {
@@ -77,18 +78,21 @@ export class ApiService {
     return this.http.get<Institution[]>(`${this.apiUrl}/institutions`);
   }
 
-  getInstitutionDetail(name: string): Observable<InstitutionDetail> {
-    return this.http.get<InstitutionDetail>(`${this.apiUrl}/institutions/${encodeURIComponent(name)}`);
+  getInstitutionDetail(name: string, useAlternateFlow: boolean = false): Observable<InstitutionDetail> {
+    const params = useAlternateFlow ? '?overrideFlow=true' : '';
+    return this.http.get<InstitutionDetail>(`${this.apiUrl}/institutions/${encodeURIComponent(name)}${params}`);
   }
 
-  getInstitutionScores(name: string): Observable<CategoryScores> {
-    return this.http.get<CategoryScores>(`${this.apiUrl}/institutions/${encodeURIComponent(name)}/scores`);
+  getInstitutionScores(name: string, useAlternateFlow: boolean = false): Observable<CategoryScores> {
+    const params = useAlternateFlow ? '?overrideFlow=true' : '';
+    return this.http.get<CategoryScores>(`${this.apiUrl}/institutions/${encodeURIComponent(name)}/scores${params}`);
   }
 
-  getCommentary(institutionName: string, category: string): Observable<{ commentary: string }> {
+  getCommentary(institutionName: string, category: string, useAlternateFlow: boolean = false): Observable<{ commentary: string }> {
     return this.http.post<{ commentary: string }>(`${this.apiUrl}/commentary`, {
       institutionName,
-      category
+      category,
+      overrideFlow: useAlternateFlow
     });
   }
 

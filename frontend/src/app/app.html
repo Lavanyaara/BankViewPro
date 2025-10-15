@@ -15,6 +15,19 @@
       </select>
     </div>
 
+    <div class="flow-toggle">
+      <label class="toggle-label">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="useAlternateFlowValue" 
+          (change)="onToggleFlowChange()" 
+          class="toggle-checkbox"
+        />
+        <span>Toggle Bank/Broker Flow</span>
+      </label>
+      <p class="toggle-description">Switch between bank and broker-dealer data sources</p>
+    </div>
+
     @if (scores()) {
       <div class="score-card">
         <h3>Overall Credit Score</h3>

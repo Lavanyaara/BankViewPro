@@ -24,8 +24,12 @@ export class App implements OnInit {
   chatInput = '';
   chatLoading = signal<boolean>(false);
 
+  // Flow toggle state
+  useAlternateFlow = signal<boolean>(false);
+
   // Regular property for ngModel binding
   selectedInstitutionName = '';
+  useAlternateFlowValue = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -50,13 +54,20 @@ export class App implements OnInit {
     this.selectInstitution(this.selectedInstitutionName);
   }
 
+  onToggleFlowChange() {
+    this.useAlternateFlow.set(this.useAlternateFlowValue);
+    if (this.selectedInstitutionName) {
+      this.selectInstitution(this.selectedInstitutionName);
+    }
+  }
+
   selectInstitution(name: string) {
     this.selectedInstitution.set(name);
     this.selectedInstitutionName = name;
     this.loading.set(true);
     this.chatMessages.set([]); // Clear chat history when institution changes
     
-    this.apiService.getInstitutionDetail(name).subscribe({
+    this.apiService.getInstitutionDetail(name, this.useAlternateFlow()).subscribe({
       next: (data) => {
         this.institutionDetail.set(data);
         this.loading.set(false);
@@ -67,7 +78,7 @@ export class App implements OnInit {
       }
     });
 
-    this.apiService.getInstitutionScores(name).subscribe({
+    this.apiService.getInstitutionScores(name, this.useAlternateFlow()).subscribe({
       next: (data) => this.scores.set(data),
       error: (err) => console.error('Error loading scores:', err)
     });
@@ -78,7 +89,7 @@ export class App implements OnInit {
   }
 
   loadCommentary(institutionName: string, category: string) {
-    this.apiService.getCommentary(institutionName, category).subscribe({
+    this.apiService.getCommentary(institutionName, category, this.useAlternateFlow()).subscribe({
       next: (data) => {
         const current = this.commentary();
         this.commentary.set({ ...current, [category]: data.commentary });
@@ -138,7 +149,8 @@ export class App implements OnInit {
     this.apiService.sendChatMessage({
       institutionName: this.selectedInstitution(),
       message: messageToSend,
-      conversationHistory: currentHistory
+      conversationHistory: currentHistory,
+      useAlternateFlow: this.useAlternateFlow()
     }).subscribe({
       next: (response) => {
         const assistantMessage: ChatMessage = {
