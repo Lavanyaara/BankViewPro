@@ -14,9 +14,8 @@ Preferred communication style: Simple, everyday language.
 - **Layout**: Tab-based navigation system (Overview, Capitalization, Asset Quality, Profitability, Liquidity) with an institution selector sidebar.
 - **Key Features**:
     - **Flow Type Selector**: Dropdown to select between "Bank Flow" and "Broker Flow"
-      - Bank Flow: Shows 9 banks, uses SEC EDGAR + FFIEC Call Reports for data
-      - Broker Flow: Shows 6 broker-dealers, uses FINRA BrokerCheck + SEC EDGAR for data
-    - **Calculation Logic Toggle**: Independent checkbox to switch between bank and broker-dealer calculation formulas (different thresholds and weights)
+      - Bank Flow: Shows 9 banks, uses SEC EDGAR + FFIEC Call Reports for data, applies bank calculation logic
+      - Broker Flow: Shows 6 broker-dealers, uses FINRA BrokerCheck + SEC EDGAR for data, applies broker-dealer calculation logic
     - **Overview Tab**: Executive summary, category score cards, AI-generated summary, and an interactive AI chatbot.
     - **Analytics Tabs**: Simplified metric displays with year-over-year changes and AI commentary.
     - **Responsiveness**: Designed for mobile and tablet compatibility.
