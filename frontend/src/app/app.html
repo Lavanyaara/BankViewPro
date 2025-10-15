@@ -21,11 +21,17 @@
 
     <div class="institution-selector">
       <label>Select Financial Institution:</label>
-      <select [(ngModel)]="selectedInstitutionName" (change)="onInstitutionChange()" class="institution-select">
-        @for (inst of filteredInstitutions(); track inst.name) {
-          <option [value]="inst.name">{{ inst.name }}</option>
-        }
-      </select>
+      @if (filteredInstitutions().length > 0) {
+        <select [(ngModel)]="selectedInstitutionName" (change)="onInstitutionChange()" class="institution-select">
+          @for (inst of filteredInstitutions(); track inst.name) {
+            <option [value]="inst.name">{{ inst.name }}</option>
+          }
+        </select>
+      } @else {
+        <div class="no-institutions-message">
+          No {{ useAlternateFlow() ? 'broker-dealers' : 'banks' }} available
+        </div>
+      }
     </div>
 
     @if (scores()) {
