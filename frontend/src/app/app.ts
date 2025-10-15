@@ -53,11 +53,19 @@ export class App implements OnInit {
     this.apiService.getInstitutions().subscribe({
       next: (data) => {
         this.institutions.set(data);
-        // Select first bank by default (since toggle starts as false/unchecked)
-        const banks = data.filter(inst => inst.type === 'Bank');
-        if (banks.length > 0) {
-          this.selectedInstitutionName = banks[0].name;
-          this.selectInstitution(banks[0].name);
+        // Select first institution based on current toggle state
+        const filtered = this.useAlternateFlow() 
+          ? data.filter(inst => inst.type === 'Broker Dealer')
+          : data.filter(inst => inst.type === 'Bank');
+        
+        if (filtered.length > 0) {
+          this.selectedInstitutionName = filtered[0].name;
+          this.selectInstitution(filtered[0].name);
+        } else {
+          // No institutions match the current filter
+          this.selectedInstitutionName = '';
+          this.institutionDetail.set(null);
+          this.scores.set(null);
         }
       },
       error: (err) => console.error('Error loading institutions:', err)
@@ -76,6 +84,12 @@ export class App implements OnInit {
     if (filtered.length > 0) {
       this.selectedInstitutionName = filtered[0].name;
       this.selectInstitution(filtered[0].name);
+    } else {
+      // No institutions match the filter - clear selection
+      this.selectedInstitutionName = '';
+      this.institutionDetail.set(null);
+      this.scores.set(null);
+      this.commentary.set({});
     }
   }
 
