@@ -25,6 +25,18 @@ const analysisService = new SECAnalysisService();
 const finraService = new FINRAService();
 const ffiecService = new FFIECService();
 
+// Helper function to get effective institution type (handles flow override)
+function getEffectiveInstitutionType(institutionName: string, overrideFlow: boolean): string {
+  const actualType = bankData[institutionName].institution_type;
+  
+  if (!overrideFlow) {
+    return actualType;
+  }
+  
+  // Swap the type when override is enabled
+  return actualType === 'Bank' ? 'Broker Dealer' : 'Bank';
+}
+
 // Helper function to extract category-specific text from EDGAR analysis
 function extractCategoryFromAnalysis(analysisText: string, category: string): string | null {
   const categoryMap: Record<string, string> = {
@@ -58,19 +70,21 @@ app.get('/api/institutions', (req: Request, res: Response) => {
 
 app.get('/api/institutions/:name', async (req: Request, res: Response) => {
   const name = decodeURIComponent(req.params.name);
+  const overrideFlow = req.query.overrideFlow === 'true';
   
   // Check if institution exists in our list
   if (!bankData[name]) {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
-  const institutionType = bankData[name].institution_type;
+  const institutionType = getEffectiveInstitutionType(name, overrideFlow);
+  const cacheKey = overrideFlow ? `${name}_override` : name;
   
   try {
     // Try to use cached data first
-    const cached = EdgarCache.get(name);
+    const cached = EdgarCache.get(cacheKey);
     if (cached) {
-      console.log(`Using cached data for ${name} (${institutionType})`);
+      console.log(`Using cached data for ${name} (${institutionType}${overrideFlow ? ' - OVERRIDDEN' : ''})`);
       return res.json(cached.data);
     }
     
@@ -129,10 +143,10 @@ app.get('/api/institutions/:name', async (req: Request, res: Response) => {
     // Map to dashboard format
     const institutionData = MetricsMapper.mapToInstitution(name, extractedMetrics, analysisResult.fullAnalysis);
     
-    // Cache the result
-    EdgarCache.set(name, institutionData, analysisResult.fullAnalysis);
+    // Cache the result with appropriate key
+    EdgarCache.set(cacheKey, institutionData, analysisResult.fullAnalysis);
     
-    console.log(`Successfully fetched and analyzed regulatory data for ${name} (${institutionType})`);
+    console.log(`Successfully fetched and analyzed regulatory data for ${name} (${institutionType}${overrideFlow ? ' - OVERRIDDEN' : ''})`);
     res.json(institutionData);
   } catch (error) {
     console.error(`Error fetching regulatory data for ${name}:`, error);
@@ -144,14 +158,18 @@ app.get('/api/institutions/:name', async (req: Request, res: Response) => {
 
 app.get('/api/institutions/:name/scores', (req: Request, res: Response) => {
   const name = decodeURIComponent(req.params.name);
+  const overrideFlow = req.query.overrideFlow === 'true';
   
   // Check if institution exists
   if (!bankData[name]) {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
+  // Use appropriate cache key based on override
+  const cacheKey = overrideFlow ? `${name}_override` : name;
+  
   // Try to use cached EDGAR data first, otherwise fall back to synthetic
-  const cached = EdgarCache.get(name);
+  const cached = EdgarCache.get(cacheKey);
   const institution = cached ? cached.data : bankData[name];
   
   const scores = calculateOverallScore(institution);
@@ -161,7 +179,7 @@ app.get('/api/institutions/:name/scores', (req: Request, res: Response) => {
 });
 
 app.post('/api/commentary', async (req: Request, res: Response) => {
-  const { institutionName, category } = req.body;
+  const { institutionName, category, overrideFlow } = req.body;
   
   if (!institutionName || !category) {
     return res.status(400).json({ error: 'institutionName and category are required' });
@@ -172,8 +190,11 @@ app.post('/api/commentary', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
+  // Use appropriate cache key based on override
+  const cacheKey = overrideFlow ? `${institutionName}_override` : institutionName;
+  
   // Try to use cached EDGAR data first, otherwise fall back to synthetic
-  const cached = EdgarCache.get(institutionName);
+  const cached = EdgarCache.get(cacheKey);
   const institution = cached ? cached.data : bankData[institutionName];
   
   // If we have EDGAR analysis text and it contains relevant category info, use it directly
@@ -195,7 +216,7 @@ app.get('/api/metrics', (req: Request, res: Response) => {
 });
 
 app.post('/api/chat', async (req: Request, res: Response) => {
-  const { institutionName, message, conversationHistory } = req.body;
+  const { institutionName, message, conversationHistory, useAlternateFlow } = req.body;
   
   if (!institutionName || !message) {
     return res.status(400).json({ error: 'institutionName and message are required' });
@@ -206,8 +227,11 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
+  // Use appropriate cache key based on override
+  const cacheKey = useAlternateFlow ? `${institutionName}_override` : institutionName;
+  
   // Try to use cached EDGAR data first, otherwise fall back to synthetic
-  const cached = EdgarCache.get(institutionName);
+  const cached = EdgarCache.get(cacheKey);
   const institution = cached ? cached.data : bankData[institutionName];
   
   const scores = calculateOverallScore(institution);
