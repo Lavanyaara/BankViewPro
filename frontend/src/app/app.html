@@ -6,15 +6,6 @@
       <h2>Credit Review Dashboard</h2>
     </div>
 
-    <div class="institution-selector">
-      <label>Select Financial Institution:</label>
-      <select [(ngModel)]="selectedInstitutionName" (change)="onInstitutionChange()" class="institution-select">
-        @for (inst of institutions(); track inst.name) {
-          <option [value]="inst.name">{{ inst.name }}</option>
-        }
-      </select>
-    </div>
-
     <div class="flow-toggle">
       <label class="toggle-label">
         <input 
@@ -23,9 +14,18 @@
           (change)="onToggleFlowChange()" 
           class="toggle-checkbox"
         />
-        <span>Toggle Bank/Broker Flow</span>
+        <span>Show Broker-Dealers</span>
       </label>
-      <p class="toggle-description">Switch between bank and broker-dealer data sources</p>
+      <p class="toggle-description">{{ useAlternateFlow() ? 'Showing broker-dealers only' : 'Showing banks only' }}</p>
+    </div>
+
+    <div class="institution-selector">
+      <label>Select Financial Institution:</label>
+      <select [(ngModel)]="selectedInstitutionName" (change)="onInstitutionChange()" class="institution-select">
+        @for (inst of filteredInstitutions(); track inst.name) {
+          <option [value]="inst.name">{{ inst.name }}</option>
+        }
+      </select>
     </div>
 
     @if (scores()) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Institution, InstitutionDetail, CategoryScores, ChatMessage } from './services/api.service';
@@ -27,6 +27,18 @@ export class App implements OnInit {
   // Flow toggle state
   useAlternateFlow = signal<boolean>(false);
 
+  // Filtered institutions based on toggle state
+  filteredInstitutions = computed(() => {
+    const allInstitutions = this.institutions();
+    const showBrokerDealers = this.useAlternateFlow();
+    
+    if (showBrokerDealers) {
+      return allInstitutions.filter(inst => inst.type === 'Broker Dealer');
+    } else {
+      return allInstitutions.filter(inst => inst.type === 'Bank');
+    }
+  });
+
   // Regular property for ngModel binding
   selectedInstitutionName = '';
   useAlternateFlowValue = false;
@@ -41,9 +53,11 @@ export class App implements OnInit {
     this.apiService.getInstitutions().subscribe({
       next: (data) => {
         this.institutions.set(data);
-        if (data.length > 0) {
-          this.selectedInstitutionName = data[0].name;
-          this.selectInstitution(data[0].name);
+        // Select first bank by default (since toggle starts as false/unchecked)
+        const banks = data.filter(inst => inst.type === 'Bank');
+        if (banks.length > 0) {
+          this.selectedInstitutionName = banks[0].name;
+          this.selectInstitution(banks[0].name);
         }
       },
       error: (err) => console.error('Error loading institutions:', err)
@@ -56,8 +70,12 @@ export class App implements OnInit {
 
   onToggleFlowChange() {
     this.useAlternateFlow.set(this.useAlternateFlowValue);
-    if (this.selectedInstitutionName) {
-      this.selectInstitution(this.selectedInstitutionName);
+    
+    // When toggle changes, automatically select the first institution from the filtered list
+    const filtered = this.filteredInstitutions();
+    if (filtered.length > 0) {
+      this.selectedInstitutionName = filtered[0].name;
+      this.selectInstitution(filtered[0].name);
     }
   }
 
