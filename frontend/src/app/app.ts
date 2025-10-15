@@ -24,15 +24,18 @@ export class App implements OnInit {
   chatInput = '';
   chatLoading = signal<boolean>(false);
 
-  // Flow type state (controls which institutions are shown and data sources used)
-  flowType = signal<'bank' | 'broker'>('bank');
+  // Flow toggle state (controls which institutions are shown)
+  useAlternateFlow = signal<boolean>(false);
 
-  // Filtered institutions based on flow type
+  // Logic toggle state (controls which calculation formulas are used)
+  useBrokerLogic = signal<boolean>(false);
+
+  // Filtered institutions based on toggle state
   filteredInstitutions = computed(() => {
     const allInstitutions = this.institutions();
-    const flow = this.flowType();
+    const showBrokerDealers = this.useAlternateFlow();
     
-    if (flow === 'broker') {
+    if (showBrokerDealers) {
       return allInstitutions.filter(inst => inst.type === 'Broker Dealer');
     } else {
       return allInstitutions.filter(inst => inst.type === 'Bank');
@@ -41,7 +44,8 @@ export class App implements OnInit {
 
   // Regular property for ngModel binding
   selectedInstitutionName = '';
-  selectedFlowType: 'bank' | 'broker' = 'bank';
+  useAlternateFlowValue = false;
+  useBrokerLogicValue = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -53,8 +57,8 @@ export class App implements OnInit {
     this.apiService.getInstitutions().subscribe({
       next: (data) => {
         this.institutions.set(data);
-        // Select first institution based on current flow type
-        const filtered = this.flowType() === 'broker'
+        // Select first institution based on current toggle state
+        const filtered = this.useAlternateFlow() 
           ? data.filter(inst => inst.type === 'Broker Dealer')
           : data.filter(inst => inst.type === 'Bank');
         
@@ -79,10 +83,10 @@ export class App implements OnInit {
     this.selectInstitution(this.selectedInstitutionName);
   }
 
-  onFlowTypeChange() {
-    this.flowType.set(this.selectedFlowType);
+  onToggleFlowChange() {
+    this.useAlternateFlow.set(this.useAlternateFlowValue);
     
-    // When flow type changes, automatically select the first institution from the filtered list
+    // When toggle changes, automatically select the first institution from the filtered list
     const filtered = this.filteredInstitutions();
     if (filtered.length > 0) {
       this.selectedInstitutionName = filtered[0].name;
@@ -98,13 +102,22 @@ export class App implements OnInit {
     }
   }
 
+  onLogicToggleChange() {
+    this.useBrokerLogic.set(this.useBrokerLogicValue);
+    
+    // Reload data with new logic if an institution is selected
+    if (this.selectedInstitutionName) {
+      this.selectInstitution(this.selectedInstitutionName);
+    }
+  }
+
   selectInstitution(name: string) {
     this.selectedInstitution.set(name);
     this.selectedInstitutionName = name;
     this.loading.set(true);
     this.chatMessages.set([]); // Clear chat history when institution changes
     
-    this.apiService.getInstitutionDetail(name, this.flowType() === 'broker').subscribe({
+    this.apiService.getInstitutionDetail(name, this.useAlternateFlow()).subscribe({
       next: (data) => {
         this.institutionDetail.set(data);
         this.loading.set(false);
@@ -115,7 +128,7 @@ export class App implements OnInit {
       }
     });
 
-    this.apiService.getInstitutionScores(name, this.flowType() === 'broker').subscribe({
+    this.apiService.getInstitutionScores(name, this.useBrokerLogic()).subscribe({
       next: (data) => this.scores.set(data),
       error: (err) => console.error('Error loading scores:', err)
     });
@@ -126,7 +139,7 @@ export class App implements OnInit {
   }
 
   loadCommentary(institutionName: string, category: string) {
-    this.apiService.getCommentary(institutionName, category, this.flowType() === 'broker').subscribe({
+    this.apiService.getCommentary(institutionName, category, this.useBrokerLogic()).subscribe({
       next: (data) => {
         const current = this.commentary();
         this.commentary.set({ ...current, [category]: data.commentary });
@@ -187,7 +200,7 @@ export class App implements OnInit {
       institutionName: this.selectedInstitution(),
       message: messageToSend,
       conversationHistory: currentHistory,
-      useAlternateFlow: this.flowType() === 'broker'
+      useAlternateFlow: this.useBrokerLogic()
     }).subscribe({
       next: (response) => {
         const assistantMessage: ChatMessage = {
