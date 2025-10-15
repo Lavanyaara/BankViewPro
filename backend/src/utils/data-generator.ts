@@ -27,16 +27,40 @@ function normalRandom(mean: number, stdDev: number, rand: () => number): number 
 
 export function generateSampleData(): Record<string, Institution> {
   const institutions = [
+    "JPMorgan Chase & Co.",
+    "Bank of America Corporation",
+    "Wells Fargo & Company",
+    "Citigroup Inc.",
+    "Goldman Sachs Group Inc.",
     "Morgan Stanley",
-    "Capital One",
-    "Amalgamated Bank of Chicago"
+    "U.S. Bancorp",
+    "Truist Financial Corporation",
+    "PNC Financial Services Group",
+    "Charles Schwab Corporation",
+    "Fidelity Investments",
+    "Interactive Brokers",
+    "LPL Financial",
+    "Raymond James Financial",
+    "E*TRADE Financial"
   ];
   
   // Define institution types explicitly
   const institutionTypes: Record<string, 'Bank' | 'Broker Dealer'> = {
-    "Morgan Stanley": "Bank",
-    "Capital One": "Bank",
-    "Amalgamated Bank of Chicago": "Bank"
+    "JPMorgan Chase & Co.": "Bank",
+    "Bank of America Corporation": "Bank",
+    "Wells Fargo & Company": "Bank",
+    "Citigroup Inc.": "Bank",
+    "Goldman Sachs Group Inc.": "Bank", // Bank holding company with broker-dealer subsidiary
+    "Morgan Stanley": "Bank", // Bank holding company with broker-dealer subsidiary
+    "U.S. Bancorp": "Bank",
+    "Truist Financial Corporation": "Bank",
+    "PNC Financial Services Group": "Bank",
+    "Charles Schwab Corporation": "Broker Dealer",
+    "Fidelity Investments": "Broker Dealer",
+    "Interactive Brokers": "Broker Dealer",
+    "LPL Financial": "Broker Dealer",
+    "Raymond James Financial": "Broker Dealer",
+    "E*TRADE Financial": "Broker Dealer"
   };
 
   const currentYear = new Date().getFullYear();
