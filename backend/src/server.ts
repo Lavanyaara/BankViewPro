@@ -158,21 +158,21 @@ app.get('/api/institutions/:name', async (req: Request, res: Response) => {
 
 app.get('/api/institutions/:name/scores', (req: Request, res: Response) => {
   const name = decodeURIComponent(req.params.name);
-  const overrideFlow = req.query.overrideFlow === 'true';
+  const useBrokerLogic = req.query.overrideFlow === 'true';
   
   // Check if institution exists
   if (!bankData[name]) {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
-  // Use appropriate cache key based on override
-  const cacheKey = overrideFlow ? `${name}_override` : name;
+  // Always use the original cache key (not affected by logic toggle)
+  const cacheKey = name;
   
   // Try to use cached EDGAR data first, otherwise fall back to synthetic
   const cached = EdgarCache.get(cacheKey);
   const institution = cached ? cached.data : bankData[name];
   
-  const scores = calculateOverallScore(institution);
+  const scores = calculateOverallScore(institution, useBrokerLogic);
   const rating = getRatingLabel(scores.overall);
   
   res.json({ ...scores, rating });
@@ -180,6 +180,7 @@ app.get('/api/institutions/:name/scores', (req: Request, res: Response) => {
 
 app.post('/api/commentary', async (req: Request, res: Response) => {
   const { institutionName, category, overrideFlow } = req.body;
+  const useBrokerLogic = overrideFlow === true;
   
   if (!institutionName || !category) {
     return res.status(400).json({ error: 'institutionName and category are required' });
@@ -190,8 +191,8 @@ app.post('/api/commentary', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Institution not found' });
   }
   
-  // Use appropriate cache key based on override
-  const cacheKey = overrideFlow ? `${institutionName}_override` : institutionName;
+  // Always use the original cache key (not affected by logic toggle)
+  const cacheKey = institutionName;
   
   // Try to use cached EDGAR data first, otherwise fall back to synthetic
   const cached = EdgarCache.get(cacheKey);
@@ -205,7 +206,7 @@ app.post('/api/commentary', async (req: Request, res: Response) => {
     }
   }
   
-  const scores = calculateOverallScore(institution);
+  const scores = calculateOverallScore(institution, useBrokerLogic);
   const commentary = await generateCommentary(institution, scores, category);
   
   res.json({ commentary });
