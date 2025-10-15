@@ -62,10 +62,13 @@ export class App implements OnInit {
           this.selectedInstitutionName = filtered[0].name;
           this.selectInstitution(filtered[0].name);
         } else {
-          // No institutions match the current filter
+          // No institutions match the current filter - clear all state
           this.selectedInstitutionName = '';
+          this.selectedInstitution.set('');
           this.institutionDetail.set(null);
           this.scores.set(null);
+          this.commentary.set({});
+          this.chatMessages.set([]);
         }
       },
       error: (err) => console.error('Error loading institutions:', err)
@@ -85,11 +88,13 @@ export class App implements OnInit {
       this.selectedInstitutionName = filtered[0].name;
       this.selectInstitution(filtered[0].name);
     } else {
-      // No institutions match the filter - clear selection
+      // No institutions match the filter - clear all state
       this.selectedInstitutionName = '';
+      this.selectedInstitution.set('');
       this.institutionDetail.set(null);
       this.scores.set(null);
       this.commentary.set({});
+      this.chatMessages.set([]);
     }
   }
 
