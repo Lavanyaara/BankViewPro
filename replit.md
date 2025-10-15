@@ -13,6 +13,7 @@ Preferred communication style: Simple, everyday language.
 - **Styling**: SCSS with a custom hunter green (#355E3B) and cream (#FFFDD0) color theme, aiming for a clean, professional financial dashboard aesthetic.
 - **Layout**: Tab-based navigation system (Overview, Capitalization, Asset Quality, Profitability, Liquidity) with an institution selector sidebar.
 - **Key Features**:
+    - **Institution Filtering**: Toggle checkbox to filter between banks (9 institutions) and broker-dealers (6 institutions). When unchecked, only banks appear in dropdown; when checked, only broker-dealers appear.
     - **Overview Tab**: Executive summary, category score cards, AI-generated summary, and an interactive AI chatbot.
     - **Analytics Tabs**: Simplified metric displays with year-over-year changes and AI commentary.
     - **Responsiveness**: Designed for mobile and tablet compatibility.
