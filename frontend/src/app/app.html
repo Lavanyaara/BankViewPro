@@ -52,6 +52,19 @@
     <header class="header">
       <h1>Credit Review Dashboard</h1>
       <p class="subtitle">Comprehensive Analytics for US Banks and Broker Dealers</p>
+      
+      <div class="logic-toggle">
+        <label class="toggle-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="useBrokerLogicValue" 
+            (change)="onLogicToggleChange()" 
+            class="toggle-checkbox"
+          />
+          <span>Use Broker-Dealer Logic</span>
+        </label>
+        <p class="toggle-description">{{ useBrokerLogic() ? 'Using broker-dealer calculations' : 'Using bank calculations' }}</p>
+      </div>
     </header>
 
     <!-- Tabs -->

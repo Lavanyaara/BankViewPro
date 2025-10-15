@@ -24,8 +24,11 @@ export class App implements OnInit {
   chatInput = '';
   chatLoading = signal<boolean>(false);
 
-  // Flow toggle state
+  // Flow toggle state (controls which institutions are shown)
   useAlternateFlow = signal<boolean>(false);
+
+  // Logic toggle state (controls which calculation formulas are used)
+  useBrokerLogic = signal<boolean>(false);
 
   // Filtered institutions based on toggle state
   filteredInstitutions = computed(() => {
@@ -42,6 +45,7 @@ export class App implements OnInit {
   // Regular property for ngModel binding
   selectedInstitutionName = '';
   useAlternateFlowValue = false;
+  useBrokerLogicValue = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -98,6 +102,15 @@ export class App implements OnInit {
     }
   }
 
+  onLogicToggleChange() {
+    this.useBrokerLogic.set(this.useBrokerLogicValue);
+    
+    // Reload data with new logic if an institution is selected
+    if (this.selectedInstitutionName) {
+      this.selectInstitution(this.selectedInstitutionName);
+    }
+  }
+
   selectInstitution(name: string) {
     this.selectedInstitution.set(name);
     this.selectedInstitutionName = name;
@@ -115,7 +128,7 @@ export class App implements OnInit {
       }
     });
 
-    this.apiService.getInstitutionScores(name, this.useAlternateFlow()).subscribe({
+    this.apiService.getInstitutionScores(name, this.useBrokerLogic()).subscribe({
       next: (data) => this.scores.set(data),
       error: (err) => console.error('Error loading scores:', err)
     });
@@ -126,7 +139,7 @@ export class App implements OnInit {
   }
 
   loadCommentary(institutionName: string, category: string) {
-    this.apiService.getCommentary(institutionName, category, this.useAlternateFlow()).subscribe({
+    this.apiService.getCommentary(institutionName, category, this.useBrokerLogic()).subscribe({
       next: (data) => {
         const current = this.commentary();
         this.commentary.set({ ...current, [category]: data.commentary });
@@ -187,7 +200,7 @@ export class App implements OnInit {
       institutionName: this.selectedInstitution(),
       message: messageToSend,
       conversationHistory: currentHistory,
-      useAlternateFlow: this.useAlternateFlow()
+      useAlternateFlow: this.useBrokerLogic()
     }).subscribe({
       next: (response) => {
         const assistantMessage: ChatMessage = {
