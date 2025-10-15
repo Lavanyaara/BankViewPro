@@ -6,17 +6,15 @@
       <h2>Credit Review Dashboard</h2>
     </div>
 
-    <div class="flow-toggle">
-      <label class="toggle-label">
-        <input 
-          type="checkbox" 
-          [(ngModel)]="useAlternateFlowValue" 
-          (change)="onToggleFlowChange()" 
-          class="toggle-checkbox"
-        />
-        <span>Show Broker-Dealers</span>
-      </label>
-      <p class="toggle-description">{{ useAlternateFlow() ? 'Showing broker-dealers only' : 'Showing banks only' }}</p>
+    <div class="flow-selector">
+      <label>Select Flow Type:</label>
+      <select [(ngModel)]="selectedFlowType" (change)="onFlowTypeChange()" class="flow-select">
+        <option value="bank">Bank Flow</option>
+        <option value="broker">Broker Flow</option>
+      </select>
+      <p class="flow-description">
+        {{ selectedFlowType === 'bank' ? 'Using SEC EDGAR + FFIEC Call Reports' : 'Using FINRA BrokerCheck + SEC EDGAR' }}
+      </p>
     </div>
 
     <div class="institution-selector">
@@ -29,7 +27,7 @@
         </select>
       } @else {
         <div class="no-institutions-message">
-          No {{ useAlternateFlow() ? 'broker-dealers' : 'banks' }} available
+          No {{ flowType() === 'broker' ? 'broker-dealers' : 'banks' }} available
         </div>
       }
     </div>
